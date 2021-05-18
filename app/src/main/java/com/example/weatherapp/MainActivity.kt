@@ -89,6 +89,24 @@ class MainActivity : AppCompatActivity() {
             val mLastLocation: Location = locationResult.lastLocation
             val latitude = mLastLocation.latitude
             val longitude = mLastLocation.longitude
+            getLocationWeatherDetails()
+        }
+    }
+
+    // 네트 워크 연결 확인
+    private fun getLocationWeatherDetails() {
+        if (Constants.isNetworkAvailable(this@MainActivity)) {
+            Toast.makeText(
+                this@MainActivity,
+                "You have connected to the internet.",
+                Toast.LENGTH_SHORT
+            ).show()
+        } else {
+            Toast.makeText(
+                this@MainActivity,
+                "No internet connected available.",
+                Toast.LENGTH_SHORT
+            ).show()
         }
     }
 
@@ -111,11 +129,13 @@ class MainActivity : AppCompatActivity() {
                 }.show()
     }
 
-    //
+    // 위치 설정 확인 https://developer.android.com/reference/android/location/LocationManager
+    // GPS와 네트워크를 통해 위치 정보 받을 수 있음 (Fused, Passive도 있음)
     private fun isLocationEnable(): Boolean {
         val locationManager: LocationManager =
                 getSystemService(Context.LOCATION_SERVICE) as LocationManager
         return locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)
                 || locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)
     }
+
 }
