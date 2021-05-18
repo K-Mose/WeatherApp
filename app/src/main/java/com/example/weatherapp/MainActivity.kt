@@ -11,15 +11,23 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Looper
 import android.provider.Settings
+import android.util.Log
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import com.example.weatherapp.databinding.ActivityMainBinding
+import com.example.weatherapp.models.WeatherResponse
+import com.example.weatherapp.network.WeatherService
 import com.google.android.gms.location.*
 import com.karumi.dexter.Dexter
 import com.karumi.dexter.MultiplePermissionsReport
 import com.karumi.dexter.PermissionToken
 import com.karumi.dexter.listener.PermissionRequest
 import com.karumi.dexter.listener.multi.MultiplePermissionsListener
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
+import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
 import java.lang.Exception
 
 class MainActivity : AppCompatActivity() {
@@ -76,7 +84,7 @@ class MainActivity : AppCompatActivity() {
 
     @SuppressLint("MissingPermission")
     private fun requestLocationData() {
-        val mLocationRequest = LocationRequest()
+        val mLocationRequest = LocationRequest.create()
         mLocationRequest.priority = LocationRequest.PRIORITY_HIGH_ACCURACY
         mFusedLocationClient.requestLocationUpdates(
                 mLocationRequest, mLocationCallback,
@@ -89,18 +97,52 @@ class MainActivity : AppCompatActivity() {
             val mLastLocation: Location = locationResult.lastLocation
             val latitude = mLastLocation.latitude
             val longitude = mLastLocation.longitude
-            getLocationWeatherDetails()
+            Log.e("LOCATION:", "$latitude, $longitude")
+            getLocationWeatherDetails(latitude, longitude)
         }
     }
 
     // 네트 워크 연결 확인
-    private fun getLocationWeatherDetails() {
+    private fun getLocationWeatherDetails(latitude: Double, longitude: Double) {
         if (Constants.isNetworkAvailable(this@MainActivity)) {
-            Toast.makeText(
-                this@MainActivity,
-                "You have connected to the internet.",
-                Toast.LENGTH_SHORT
-            ).show()
+            // retrofit 사용 // API - https://square.github.io/retrofit/
+            val retrofit : Retrofit = Retrofit.Builder()
+                .baseUrl(Constants.BASE_URL)
+                .addConverterFactory(GsonConverterFactory.create()) // Gson으로 자동 컨버젼하는 팩토리 생성. 컨버터의 종류는 다양함
+                .build()
+            val service: WeatherService = retrofit.create<WeatherService>(WeatherService::class.java)
+            val listCall: Call<WeatherResponse> = service.getWeather(
+                latitude, longitude, Constants.METRIC_UNIT, Constants.APP_ID
+            )
+
+            /* void enqueue(Callback<T> callback);
+             * Asynchronously send the request and notify {@code callback} of its response or if an error
+             * occurred talking to the server, creating the request, or processing the response.
+             * 비동기식으로 리퀘스트 전송 후, 응답을 받아옴. execute 하면 동기식으로 사용함
+             */
+            listCall.enqueue(object : Callback<WeatherResponse>{
+                override fun onFailure(call: Call<WeatherResponse>, t: Throwable) {
+                    Log.e("Fail","FAIL, ${t.message.toString()}")
+                }
+
+                override fun onResponse(
+                    call: Call<WeatherResponse>,
+                    response: Response<WeatherResponse>
+                ) {
+                    if(response.isSuccessful){
+                        val weatherList: WeatherResponse = response.body()!!
+                        Log.i("ResponseResult", "$weatherList")
+                    }else{
+                        val rc = response.code()
+                        when(rc){
+                            400 -> Log.e("Error 400", "BAD Connection")
+                            404 -> Log.e("Error 404", "Not Found")
+                            else ->  Log.e("Error $rc", "$rc ERROR")
+                        }
+                    }
+                }
+            })
+
         } else {
             Toast.makeText(
                 this@MainActivity,
