@@ -5,6 +5,7 @@ import android.annotation.SuppressLint
 import android.app.Dialog
 import android.content.Context
 import android.content.Intent
+import android.graphics.drawable.Drawable
 import android.location.Location
 import android.location.LocationManager
 import android.net.Uri
@@ -220,6 +221,26 @@ class MainActivity : AppCompatActivity() {
                 tvCountry.text = weatherList.sys.country
                 tvHumidity.text = weatherList.main.humidity.toString() + "%"
                 tvName.text = weatherList.name
+
+                // weather icon set up
+                when(weatherList.weather[i].icon){
+                    "01d" -> ivMain.setImageResource(R.drawable.sunny)
+                    "02d" -> ivMain.setImageResource(R.drawable.cloud)
+                    "03d" -> ivMain.setImageResource(R.drawable.cloud)
+                    "04d" -> ivMain.setImageResource(R.drawable.cloud)
+                    "09d" -> ivMain.setImageResource(R.drawable.rain)
+                    "10d" -> ivMain.setImageResource(R.drawable.storm)
+                    "11d" -> ivMain.setImageResource(R.drawable.storm)
+                    "13d" -> ivMain.setImageResource(R.drawable.snowflake)
+                    "01n" -> ivMain.setImageResource(R.drawable.sunny)
+                    "02n" -> ivMain.setImageResource(R.drawable.cloud)
+                    "03n" -> ivMain.setImageResource(R.drawable.cloud)
+                    "04n" -> ivMain.setImageResource(R.drawable.cloud)
+                    "09n" -> ivMain.setImageResource(R.drawable.rain)
+                    "10n" -> ivMain.setImageResource(R.drawable.storm)
+                    "11n" -> ivMain.setImageResource(R.drawable.storm)
+                    "13n" -> ivMain.setImageResource(R.drawable.snowflake)
+                }
             }
         }
     }
