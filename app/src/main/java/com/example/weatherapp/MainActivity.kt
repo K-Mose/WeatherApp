@@ -2,6 +2,7 @@ package com.example.weatherapp
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.app.Dialog
 import android.content.Context
 import android.content.Intent
 import android.location.Location
@@ -36,6 +37,7 @@ class MainActivity : AppCompatActivity() {
         get() = _binding!!
 
     private lateinit var mFusedLocationClient : FusedLocationProviderClient
+    private lateinit var customDialog: Dialog
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         _binding = ActivityMainBinding.inflate(layoutInflater)
@@ -82,6 +84,18 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    // ProgressDialog
+    private fun progressBar(){
+        Log.e("프로그레스다이얼로그  ", "첵")
+        customDialog = Dialog(this@MainActivity)
+        customDialog.setContentView(R.layout.dialog_custom_progress)
+        customDialog.show()
+    }
+    private fun hideProgressBar(){
+        Log.e("프로그레스다이얼로그  ", "아웃")
+        customDialog.dismiss()
+    }
+
     @SuppressLint("MissingPermission")
     private fun requestLocationData() {
         val mLocationRequest = LocationRequest.create()
@@ -97,6 +111,7 @@ class MainActivity : AppCompatActivity() {
             val mLastLocation: Location = locationResult.lastLocation
             val latitude = mLastLocation.latitude
             val longitude = mLastLocation.longitude
+
             Log.e("LOCATION:", "$latitude, $longitude")
             getLocationWeatherDetails(latitude, longitude)
         }
@@ -119,7 +134,10 @@ class MainActivity : AppCompatActivity() {
              * Asynchronously send the request and notify {@code callback} of its response or if an error
              * occurred talking to the server, creating the request, or processing the response.
              * 비동기식으로 리퀘스트 전송 후, 응답을 받아옴. execute 하면 동기식으로 사용함
+             * > 그러고 보니 네트워크 리퀘스트는 Main스레드에서 실행 안되는데,
+             *   콜백이 메인스레드에서 실행 된다고 함.
              */
+            progressBar()
             listCall.enqueue(object : Callback<WeatherResponse>{
                 override fun onFailure(call: Call<WeatherResponse>, t: Throwable) {
                     Log.e("Fail","FAIL, ${t.message.toString()}")
@@ -140,9 +158,9 @@ class MainActivity : AppCompatActivity() {
                             else ->  Log.e("Error $rc", "$rc ERROR")
                         }
                     }
+                    hideProgressBar()
                 }
             })
-
         } else {
             Toast.makeText(
                 this@MainActivity,
