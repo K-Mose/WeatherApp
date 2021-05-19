@@ -8,12 +8,14 @@ import android.content.Intent
 import android.location.Location
 import android.location.LocationManager
 import android.net.Uri
+import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Looper
 import android.provider.Settings
 import android.util.Log
 import android.widget.Toast
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AlertDialog
 import com.example.weatherapp.databinding.ActivityMainBinding
 import com.example.weatherapp.models.WeatherResponse
@@ -30,6 +32,8 @@ import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import java.lang.Exception
+import java.text.SimpleDateFormat
+import java.util.*
 
 class MainActivity : AppCompatActivity() {
     private lateinit var _binding: ActivityMainBinding
@@ -199,14 +203,23 @@ class MainActivity : AppCompatActivity() {
                 || locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)
     }
 
+    @RequiresApi(Build.VERSION_CODES.N)
     private fun setupUI(weatherList: WeatherResponse){
         for (i in weatherList.weather.indices){
             Log.i("$i weather Name", weatherList.weather.toString())
             binding.apply {
                 tvMain.text = weatherList.weather[i].main
                 tvMainDescription.text = weatherList.weather[i].description
-                tvTemp.text = weatherList.main.temp.toString() + getUnit(application.resources.configuration.locales.toString())
-
+                tvTemp.text = weatherList.main.temp.toString() + getUnit(weatherList.sys.country) // getUnit(application.resources.configuration.locales.toString())
+                tvSunriseTime.text = unixTime(weatherList.sys.sunrise)
+                tvSunsetTime.text = unixTime(weatherList.sys.sunset)
+                tvMax.text = weatherList.main.temp_max.toString() + getUnit(weatherList.sys.country)
+                tvMin.text = weatherList.main.temp_min.toString() + getUnit(weatherList.sys.country)
+                tvSpeed.text = weatherList.wind.speed.toString()
+                tvSpeedUnit.text ="m/s"
+                tvCountry.text = weatherList.sys.country
+                tvHumidity.text = weatherList.main.humidity.toString() + "%"
+                tvName.text = weatherList.name
             }
         }
     }
@@ -217,5 +230,13 @@ class MainActivity : AppCompatActivity() {
             "US", "LR", "MM"-> "℉"
             else -> "℃"
         }
+    }
+
+    private fun unixTime(timex: Long): String{
+        val date = Date(timex * 1000L)
+        Log.e("date","$date")
+        val sdf = SimpleDateFormat("HH:mm:ss", Locale.KOREA)
+        sdf.timeZone = TimeZone.getDefault()
+        return sdf.format(date)
     }
 }
