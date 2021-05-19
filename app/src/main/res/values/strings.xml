@@ -7,4 +7,7 @@
     <!-- For UI -->
     <string name="image_contentDescription">image</string>
     <string name="miles_per_hour">miles/hour</string>
+
+    <!-- menu -->
+    <string name="action_refresh">Refresh</string>
 </resources>
