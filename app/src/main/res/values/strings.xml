@@ -1,5 +1,10 @@
 <resources>
     <string name="app_name">WeatherApp</string>
 
+    <!-- ProgressBar -->
     <string name="please_wait">Please Wait&#8230;</string>
+
+    <!-- For UI -->
+    <string name="image_contentDescription">image</string>
+    <string name="miles_per_hour">miles/hour</string>
 </resources>
