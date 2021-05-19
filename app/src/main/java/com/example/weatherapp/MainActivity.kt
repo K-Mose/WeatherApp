@@ -149,6 +149,7 @@ class MainActivity : AppCompatActivity() {
                 ) {
                     if(response.isSuccessful){
                         val weatherList: WeatherResponse = response.body()!!
+                        setupUI(weatherList)
                         Log.i("ResponseResult", "$weatherList")
                     }else{
                         val rc = response.code()
@@ -198,4 +199,23 @@ class MainActivity : AppCompatActivity() {
                 || locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)
     }
 
+    private fun setupUI(weatherList: WeatherResponse){
+        for (i in weatherList.weather.indices){
+            Log.i("$i weather Name", weatherList.weather.toString())
+            binding.apply {
+                tvMain.text = weatherList.weather[i].main
+                tvMainDescription.text = weatherList.weather[i].description
+                tvTemp.text = weatherList.main.temp.toString() + getUnit(application.resources.configuration.locales.toString())
+
+            }
+        }
+    }
+
+    private fun getUnit(loc: String): String? {
+        Log.e("LOCALES",loc)
+        return when(loc){
+            "US", "LR", "MM"-> "℉"
+            else -> "℃"
+        }
+    }
 }
