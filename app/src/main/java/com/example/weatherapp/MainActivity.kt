@@ -15,6 +15,8 @@ import android.os.Bundle
 import android.os.Looper
 import android.provider.Settings
 import android.util.Log
+import android.view.Menu
+import android.view.MenuItem
 import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AlertDialog
@@ -91,13 +93,11 @@ class MainActivity : AppCompatActivity() {
 
     // ProgressDialog
     private fun progressBar(){
-        Log.e("프로그레스다이얼로그  ", "첵")
         customDialog = Dialog(this@MainActivity)
         customDialog.setContentView(R.layout.dialog_custom_progress)
         customDialog.show()
     }
     private fun hideProgressBar(){
-        Log.e("프로그레스다이얼로그  ", "아웃")
         customDialog.dismiss()
     }
 
@@ -204,7 +204,22 @@ class MainActivity : AppCompatActivity() {
                 || locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)
     }
 
-    @RequiresApi(Build.VERSION_CODES.N)
+    // Menu
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        menuInflater.inflate(R.menu.menu_main, menu )
+        return super.onCreateOptionsMenu(menu)
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        return when(item.itemId){
+            R.id.action_refresh -> {
+                requestLocationData()
+                true
+            }
+            else -> super.onOptionsItemSelected(item)
+        }
+    }
+
     private fun setupUI(weatherList: WeatherResponse){
         for (i in weatherList.weather.indices){
             Log.i("$i weather Name", weatherList.weather.toString())
@@ -222,7 +237,7 @@ class MainActivity : AppCompatActivity() {
                 tvHumidity.text = weatherList.main.humidity.toString() + "%"
                 tvName.text = weatherList.name
 
-                // weather icon set up
+                // weather icon set up // https://openweathermap.org/weather-conditions
                 when(weatherList.weather[i].icon){
                     "01d" -> ivMain.setImageResource(R.drawable.sunny)
                     "02d" -> ivMain.setImageResource(R.drawable.cloud)
@@ -246,7 +261,6 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun getUnit(loc: String): String? {
-        Log.e("LOCALES",loc)
         return when(loc){
             "US", "LR", "MM"-> "℉"
             else -> "℃"
