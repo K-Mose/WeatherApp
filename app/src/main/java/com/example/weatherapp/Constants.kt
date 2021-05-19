@@ -15,6 +15,9 @@ object Constants {
     // 또는 https://stackoverflow.com/questions/45940861/android-8-cleartext-http-traffic-not-permitted
     const val METRIC_UNIT: String = "metric"
 
+    const val PREFERENCE_NAME = "WeatherAppPreference"
+    const val WEATHER_RESPONSE_DATA = "weather_response_data"
+
     fun isNetworkAvailable(context: Context): Boolean {
         val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){ // SDK 23 이상 / api 28 이상

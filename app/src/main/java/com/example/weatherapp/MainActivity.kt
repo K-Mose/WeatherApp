@@ -5,6 +5,7 @@ import android.annotation.SuppressLint
 import android.app.Dialog
 import android.content.Context
 import android.content.Intent
+import android.content.SharedPreferences
 import android.graphics.drawable.Drawable
 import android.location.Location
 import android.location.LocationManager
@@ -24,6 +25,7 @@ import com.example.weatherapp.databinding.ActivityMainBinding
 import com.example.weatherapp.models.WeatherResponse
 import com.example.weatherapp.network.WeatherService
 import com.google.android.gms.location.*
+import com.google.gson.Gson
 import com.karumi.dexter.Dexter
 import com.karumi.dexter.MultiplePermissionsReport
 import com.karumi.dexter.PermissionToken
@@ -45,6 +47,8 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var mFusedLocationClient : FusedLocationProviderClient
     private lateinit var customDialog: Dialog
+
+    private lateinit var mSharedPreferences: SharedPreferences
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         _binding = ActivityMainBinding.inflate(layoutInflater)
@@ -52,6 +56,10 @@ class MainActivity : AppCompatActivity() {
 
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this@MainActivity)
 
+        /* SharedPreferences -> 앱 데이터 폴더 내에 shared_prefs 폴더를 만들어서 key, value 형식으로 데이터를 저장한다.
+           데이터는 일관된 상태와 흐름을 저장하기 위해 Editor객체를 이용하며, 가져올 때는 immutable로 가져온다.
+        */
+        mSharedPreferences = getSharedPreferences(Constants.PREFERENCE_NAME, Context.MODE_PRIVATE) // 생성된 데이터가 현재 앱에서만 사용되고 다른 앱에서 접근 못하게 설정
 
         if(!isLocationEnable()) {
             Toast.makeText(
@@ -154,7 +162,12 @@ class MainActivity : AppCompatActivity() {
                 ) {
                     if(response.isSuccessful){
                         val weatherList: WeatherResponse = response.body()!!
-                        setupUI(weatherList)
+
+                        val weatherResponseJsonString = Gson().toJson(weatherList)
+                        val editor = mSharedPreferences.edit() // 참조를 위한 데이터 에디터 생성. 참조의 데이터를 수정하고 SharedPreferences 객체의 변화를 자동적으로 commit 한다.
+                        editor.putString(Constants.WEATHER_RESPONSE_DATA, weatherResponseJsonString) // 작성 완료를 위해 commit이나 apply를 호출해야 함
+                        editor.apply() // editor에 넣은 데이터를 적용시킴
+                        setupUI()
                         Log.i("ResponseResult", "$weatherList")
                     }else{
                         val rc = response.code()
@@ -220,8 +233,13 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun setupUI(weatherList: WeatherResponse){
-        for (i in weatherList.weather.indices){
+    private fun setupUI(){
+        val weatherResponseJsonString = mSharedPreferences.getString(Constants.WEATHER_RESPONSE_DATA, "")
+        val weatherList: WeatherResponse? =
+                weatherResponseJsonString?.run {
+                    Gson().fromJson(weatherResponseJsonString, WeatherResponse::class.java)
+                } ?: null
+        for (i in weatherList!!.weather.indices){
             Log.i("$i weather Name", weatherList.weather.toString())
             binding.apply {
                 tvMain.text = weatherList.weather[i].main
@@ -244,7 +262,7 @@ class MainActivity : AppCompatActivity() {
                     "03d" -> ivMain.setImageResource(R.drawable.cloud)
                     "04d" -> ivMain.setImageResource(R.drawable.cloud)
                     "09d" -> ivMain.setImageResource(R.drawable.rain)
-                    "10d" -> ivMain.setImageResource(R.drawable.storm)
+                    "10d" -> ivMain.setImageResource(R.drawable.rain)
                     "11d" -> ivMain.setImageResource(R.drawable.storm)
                     "13d" -> ivMain.setImageResource(R.drawable.snowflake)
                     "01n" -> ivMain.setImageResource(R.drawable.sunny)
@@ -252,7 +270,7 @@ class MainActivity : AppCompatActivity() {
                     "03n" -> ivMain.setImageResource(R.drawable.cloud)
                     "04n" -> ivMain.setImageResource(R.drawable.cloud)
                     "09n" -> ivMain.setImageResource(R.drawable.rain)
-                    "10n" -> ivMain.setImageResource(R.drawable.storm)
+                    "10n" -> ivMain.setImageResource(R.drawable.rain)
                     "11n" -> ivMain.setImageResource(R.drawable.storm)
                     "13n" -> ivMain.setImageResource(R.drawable.snowflake)
                 }
