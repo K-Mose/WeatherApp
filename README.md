@@ -6,7 +6,7 @@ Dexter를 사용해 앱 권한을 설정하고 retrofit으로 네트워크 요�
 <br>
 <br>
 ## PreView
-https://user-images.githubusercontent.com/55622345/122355715-1683b200-cf8d-11eb-8309-e6af097ffeab.mp4
+<video src="https://user-images.githubusercontent.com/55622345/122355715-1683b200-cf8d-11eb-8309-e6af097ffeab.mp4">
 <br>
 <br>
 <br>
